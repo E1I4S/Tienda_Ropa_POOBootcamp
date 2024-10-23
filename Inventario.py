@@ -1,120 +1,126 @@
-class Prenda:
+class Producto:
     def __init__(self, nombre, precio, cantidad):
         self._nombre = nombre
         self._precio = precio
         self._cantidad = cantidad
-    
+
     def mostrar_info(self):
         pass
-    
+
+    def get_precio(self):
+        return self._precio
+
+    def get_nombre(self):
+        return self._nombre
+
+    def get_cantidad(self):
+        return self._cantidad
+
     def actualizar_stock(self, cantidad_vendida):
         if cantidad_vendida <= self._cantidad:
             self._cantidad -= cantidad_vendida
             return True
         else:
-            print(f"No hay suficiente stock de {self._nombre}")
+            print(f"No hay suficiente stock de {self._nombre}.")
             return False
-    
-    def get_precio(self):
-        return self._precio
-    
-    def get_nombre(self):
-        return self._nombre
-    
-    def get_cantidad(self):
-        return self._cantidad
 
 
-class RopaHombre(Prenda):
-    def __init__(self, nombre, precio, cantidad, talla):
+class Ropa(Producto):
+    def __init__(self, nombre, precio, cantidad, talla, tipo_tela):
         super().__init__(nombre, precio, cantidad)
         self._talla = talla 
-    
+        self._tipo_tela = tipo_tela 
+
     def mostrar_info(self):
-        print(f"Ropa de Hombre: {self._nombre} - Precio: ${self._precio} - Cantidad: {self._cantidad} - Talla: {self._talla}")
+        print(f"{self.get_nombre()} - Precio: ${self.get_precio()} - Cantidad: {self.get_cantidad()} - Talla: {self._talla} - Tela: {self._tipo_tela}")
 
 
-class RopaMujer(Prenda):
-    def __init__(self, nombre, precio, cantidad, talla):
-        super().__init__(nombre, precio, cantidad)
-        self._talla = talla
-    
+class Camisa(Ropa):
+    def __init__(self, nombre, precio, cantidad, talla, tipo_tela):
+        super().__init__(nombre, precio, cantidad, talla, tipo_tela)
+
     def mostrar_info(self):
-        print(f"Ropa de Mujer: {self._nombre} - Precio: ${self._precio} - Cantidad: {self._cantidad} - Talla: {self._talla}")
+        print(f"Camisa: {self.get_nombre()} - Precio: ${self.get_precio()} - Cantidad: {self.get_cantidad()} - Talla: {self._talla} - Tela: {self._tipo_tela}")
 
 
-class Inventario:
+class Pantalon(Ropa):
+    def __init__(self, nombre, precio, cantidad, talla, tipo_tela):
+        super().__init__(nombre, precio, cantidad, talla, tipo_tela)
+
+    def mostrar_info(self):
+        print(f"Pantalón: {self.get_nombre()} - Precio: ${self.get_precio()} - Cantidad: {self.get_cantidad()} - Talla: {self._talla} - Tela: {self._tipo_tela}")
+
+
+class Zapato(Ropa):
+    def __init__(self, nombre, precio, cantidad, talla, material):
+        super().__init__(nombre, precio, cantidad, talla, material)
+
+    def mostrar_info(self):
+        print(f"Zapato: {self.get_nombre()} - Precio: ${self.get_precio()} - Cantidad: {self.get_cantidad()} - Talla: {self._talla} - Material: {self._tipo_tela}")
+
+
+class Carrito:
     def __init__(self):
-        self.prendas = [] 
-    
-    def agregar_prenda(self, prenda):
-        self.prendas.append(prenda)
-    
-    def mostrar_inventario(self):
-        if not self.prendas:
-            print("El inventario está vacío.")
-        else:
-            for prenda in self.prendas:
-                prenda.mostrar_info()
-    
-    def buscar_prenda(self, nombre):
-        for prenda in self.prendas:
-            if prenda.get_nombre().lower() == nombre.lower():
-                return prenda
-        return None
+        self._productos = [] 
+
+    def agregar_producto(self, producto, cantidad):
+        if producto.actualizar_stock(cantidad):
+            self._productos.append((producto, cantidad))
+
+    def calcular_total(self):
+        total = sum(producto.get_precio() * cantidad for producto, cantidad in self._productos)
+        return total
+
+    def mostrar_resumen(self):
+        print("\n--- Resumen de Compra ---")
+        for producto, cantidad in self._productos:
+            print(f"{cantidad} x {producto.get_nombre()} - Precio Unitario: ${producto.get_precio()} - Total: ${producto.get_precio() * cantidad}")
+        print(f"Total a pagar: ${self.calcular_total()}")
 
 class Tienda:
-    def __init__(self, inventario):
-        self.inventario = inventario
-    
-    def procesar_compra(self, nombre_prenda, cantidad):
-        prenda = self.inventario.buscar_prenda(nombre_prenda)
-        if prenda:
-            if prenda.actualizar_stock(cantidad):
-                total = prenda.get_precio() * cantidad
-                print(f"Compra realizada: {cantidad} x {prenda.get_nombre()} - Total: ${total}")
+    def __init__(self):
+        self.inventario = [] 
+
+    def agregar_producto(self, producto):
+        self.inventario.append(producto)
+
+    def mostrar_inventario(self):
+        print("\n--- Inventario Disponible ---")
+        for producto in self.inventario:
+            producto.mostrar_info()
+
+    def procesar_compra(self):
+        carrito = Carrito()
+        while True:
+            self.mostrar_inventario()
+            nombre_prenda = input("Ingrese el nombre de la prenda que desea comprar (o 'salir' para finalizar): ")
+            if nombre_prenda.lower() == 'salir':
+                break
+            cantidad = int(input("Ingrese la cantidad que desea comprar: "))
+            producto = next((p for p in self.inventario if p.get_nombre().lower() == nombre_prenda.lower()), None)
+            if producto:
+                carrito.agregar_producto(producto, cantidad)
             else:
-                print(f"No se pudo completar la compra. Stock insuficiente.")
-        else:
-            print("La prenda no se encuentra en el inventario.")
+                print("La prenda no se encuentra en el inventario.")
+
+        carrito.mostrar_resumen()
 
 
 def iniciar_tienda():
-    camisa_hombre = RopaHombre("Camisa de Hombre", 25.00, 50, "M")
-    pantalon_hombre = RopaHombre("Pantalón de Hombre", 30.00, 30, "L")
-    falda_mujer = RopaMujer("Falda de Mujer", 28.00, 15, "S")
-    blusa_mujer = RopaMujer("Blusa de Mujer", 22.00, 40, "M")
+    camisa1 = Camisa("Camisa de Hombre", 25.00, 50, "M", "Algodón")
+    pantalon1 = Pantalon("Pantalón de Hombre", 30.00, 30, "L", "Denim")
+    zapato1 = Zapato("Zapato de Hombre", 60.00, 25, "42", "Cuero")
+    camisa2 = Camisa("Blusa de Mujer", 22.00, 40, "M", "Poliéster")
+    pantalon2 = Pantalon("Falda de Mujer", 28.00, 15, "S", "Seda")
 
-    inventario = Inventario()
-    inventario.agregar_prenda(camisa_hombre)
-    inventario.agregar_prenda(pantalon_hombre)
-    inventario.agregar_prenda(falda_mujer)
-    inventario.agregar_prenda(blusa_mujer)
+    tienda = Tienda()
+    tienda.agregar_producto(camisa1)
+    tienda.agregar_producto(pantalon1)
+    tienda.agregar_producto(zapato1)
+    tienda.agregar_producto(camisa2)
+    tienda.agregar_producto(pantalon2)
 
-    tienda = Tienda(inventario)
+    tienda.procesar_compra()
 
-    while True:
-        print("\n--- Menú de la Tienda ---")
-        print("1. Ver Inventario")
-        print("2. Comprar Prenda")
-        print("3. Salir")
-        
-        opcion = input("Seleccione una opción: ")
-
-        if opcion == "1":
-            print("\n--- Inventario Disponible ---")
-            inventario.mostrar_inventario()
-
-        elif opcion == "2":
-            nombre_prenda = input("Ingrese el nombre de la prenda que desea comprar: ")
-            cantidad = int(input("Ingrese la cantidad que desea comprar: "))
-            tienda.procesar_compra(nombre_prenda, cantidad)
-
-        elif opcion == "3":
-            print("Gracias por visitar la tienda. ¡Hasta luego!")
-            break
-
-        else:
-            print("Opción no válida. Intente nuevamente.")
 
 iniciar_tienda()
